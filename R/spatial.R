@@ -59,7 +59,7 @@ get_bathymetry <- function() {
 get_sediment <- function() {
 
   phi <- stars::read_stars(system.file(package = "BeringSeaData", "GIS", "phi.grd"))
-  phi <- phi |> st_warp(crs = "+proj=longlat +datum=WGS84 +no_defs")
+  phi <- phi |> stars::st_warp(crs = "+proj=longlat +datum=WGS84 +no_defs")
   names(phi) <- "phi"
   phi
 

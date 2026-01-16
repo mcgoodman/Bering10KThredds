@@ -54,13 +54,13 @@ get_hauldata <- function(survey = c("All", "EBS", "SEBS", "NBS", "EBS Slope", "A
       if (is.null(nrow(haul_data_i))) break
 
       ## bind sub-pull to data
-      haul_data <- haul_data |> dplyr::bind_rows(dplyr::select(haul_data_i, -links))
+      haul_data <- haul_data |> dplyr::bind_rows(dplyr::select(haul_data_i, -.data$links))
     }
 
   }
 
   if (!missing(years)) {
-    haul_data <- haul_data |> dplyr::filter(year %in% years)
+    haul_data <- haul_data |> dplyr::filter(.data$year %in% years)
   }
 
   haul_data
@@ -84,7 +84,7 @@ get_species_codes <- function(sciname) {
 
   ## convert from JSON format
   species_data <- jsonlite::fromJSON(base::rawToChar(res$content))
-  species_data <- species_data$items |> dplyr::select(-links)
+  species_data <- species_data$items |> dplyr::select(-.data$links)
 
   if (missing(sciname)) {
     return(species_data)
@@ -103,6 +103,8 @@ get_species_codes <- function(sciname) {
 #' data corresponding to the `survey` argument will be downloaded, however if calling `get_catch` multiple times
 #' for different species, it is more efficient to download the haul data first and pass it to each `get_catch` call.
 #' @param years Years to subset data to. If missing, returns all years.
+#'
+#' @importFrom rlang .data
 #'
 #' @returns A data.frame
 #' @export
@@ -128,10 +130,10 @@ get_catch <- function(species_code, zero_expand = FALSE, haul_data, survey = c("
     if (missing(haul_data)) {
       haul_data <- get_hauldata(survey = survey)
     } else {
-      haul_data <- haul_data |> dplyr::filter(srvy %in% survey_sub)
+      haul_data <- haul_data |> dplyr::filter(.data$srvy %in% survey_sub)
     }
     if (!missing(years)) {
-      haul_data <- haul_data |> dplyr::filter(year %in% years)
+      haul_data <- haul_data |> dplyr::filter(.data$year %in% years)
     }
   }
 
@@ -152,7 +154,7 @@ get_catch <- function(species_code, zero_expand = FALSE, haul_data, survey = c("
     if (is.null(nrow(catch_data_i))) break
 
     ## bind sub-pull to data
-    catch_data <- catch_data |> dplyr::bind_rows(dplyr::select(catch_data_i, -links))
+    catch_data <- catch_data |> dplyr::bind_rows(dplyr::select(catch_data_i, -.data$links))
 
     if (nrow(catch_data_i) < 10000) break
 
@@ -171,13 +173,13 @@ get_catch <- function(species_code, zero_expand = FALSE, haul_data, survey = c("
     # Filtering of surveys / years is handled by left-joining to haul_data, which
     # already does not contain those surveys / years
     catch_data <- haul_data |>
-      dplyr::rename(station_id = station) |>
+      dplyr::rename(station_id = .data$station) |>
       dplyr::left_join(catch_data, by = "hauljoin") |>
-      dplyr::mutate(across(
-        c(cpue_kgkm2, cpue_nokm2, weight_kg, count),
+      dplyr::mutate(dplyr::across(
+        c(.data$cpue_kgkm2, .data$cpue_nokm2, .data$weight_kg, .data$count),
         \(x) ifelse(is.na(x), 0, x)
       )) |>
-      dplyr::arrange(year, station_id)
+      dplyr::arrange(.data$year, .data$station_id)
 
   } else if (!isTRUE(zero_expand) & (!missing(years) | survey != "All")) {
 

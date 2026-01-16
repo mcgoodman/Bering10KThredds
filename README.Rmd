@@ -5,6 +5,7 @@ output: md_document
 
 ```{r, include = FALSE}
 library("BeringSeaData")
+knitr::opts_chunk$set(fig.path = "man/figures/")
 ```
 
 # Eastern Bering Sea survey and oceanographic data

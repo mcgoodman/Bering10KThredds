@@ -10,9 +10,9 @@ test_that(
       end_date = as.Date("2020-02-28")
     )
 
-    expect_equal(dim(mom6), c(x = 99, y = 98, time = 2))
+    expect_equal(dim(mom6), c(x = 99, y = 99, time = 2))
 
-    expect_equal(st_crs(mom6)$epsg, 32602)
+    expect_equal(sf::st_crs(mom6)$epsg, 32602)
 
     # Error checking works
 
@@ -32,8 +32,8 @@ test_that(
       "sob",
       start_date = as.Date("2020-01-01"),
       end_date = as.Date("2020-02-28"),
-      target_crs = st_crs(mom6),
-      extent = st_bbox(get_ebs_shapefile("EBS"))
+      target_crs = sf::st_crs(mom6),
+      extent = sf::st_bbox(get_ebs_shapefile("EBS"))
     )
 
     expect_equal(dim(mom6), c(x = 135, y = 111, time = 2))

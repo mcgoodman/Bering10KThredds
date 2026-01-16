@@ -65,12 +65,12 @@ The result is a 3-dimensional `stars` object with a band for each month:
 
     ## stars object with 3 dimensions and 1 attribute
     ## attribute(s):
-    ##              Min.  1st Qu.   Median     Mean  3rd Qu.     Max.   NA's
-    ## tob [1] -1.963169 0.218686 2.165639 2.263047 3.871479 15.73961 314160
+    ##           Min.   1st Qu.   Median     Mean  3rd Qu.    Max.   NA's
+    ## tob  -1.960721 0.1090782 2.019937 2.220932 3.832766 15.6925 321300
     ## dimension(s):
     ##      from  to  offset  delta               refsys                    values x/y
-    ## x       6 104   -7679  12411 WGS 84 / UTM zone 2N                      NULL [x]
-    ## y       6 103 7330028 -12411 WGS 84 / UTM zone 2N                      NULL [y]
+    ## x       6 104  -17526  12418 WGS 84 / UTM zone 2N                      NULL [x]
+    ## y       5 103 7323894 -12418 WGS 84 / UTM zone 2N                      NULL [y]
     ## time    1  60      NA     NA                 Date 2020-01-01,...,2024-12-01
 
 ## Bering 10K ROMS model
@@ -130,7 +130,7 @@ Plotting, for example, the first week in this dataset:
       scale_fill_viridis_c(option = "inferno") + 
       scale_color_viridis_c(option = "inferno")
 
-![](README_files/figure-markdown_strict/unnamed-chunk-8-1.png)
+![](man/figures/unnamed-chunk-8-1.png)
 
 ### Delta bias-correcting ROMs projections
 

@@ -10,11 +10,12 @@ Encoding: UTF-8
 LazyData: true
 RdMacros: Rdpack
 Depends:
-    R (>= 4.1.0),
-    stars
+    R (>= 4.1.0)
 Imports:
     sf, 
+    stars,
     curl,
+    rlang,
     dplyr,
     lubridate,
     Rdpack,
@@ -23,9 +24,8 @@ Imports:
     tidync,
     jsonlite, 
     httr, 
-    units, 
     stats
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

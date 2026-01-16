@@ -14,14 +14,14 @@ test_that(
     )
 
     expect_true(
-      all(lubridate::year(st_get_dimension_values(roms, "ocean_time")) %in% 2040:2042)
+      all(lubridate::year(stars::st_get_dimension_values(roms, "ocean_time")) %in% 2040:2042)
     )
 
     expect_equal(sum(!is.na(roms$temp)), 839322)
 
     expect_equal(dim(roms), c(xi_rho = 182, eta_rho = 258, ocean_time = 157))
 
-    expect_equal(st_crs(roms)$proj4string, "+proj=longlat +datum=WGS84 +no_defs")
+    expect_equal(sf::st_crs(roms)$proj4string, "+proj=longlat +datum=WGS84 +no_defs")
 
     roms <- get_roms_b10k(
       "oxygen_bottom5m",

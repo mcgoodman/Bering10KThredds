@@ -82,7 +82,7 @@ get_mom6_nep <- function(
   # Link to netcdf file
   if (nrow(var_info) != 1) stop("Problem with query")
   url <- var_info$cefi_opendap
-  nc <- suppressMessages(tidync::tidync(url))
+  nc <- suppressWarnings(suppressMessages(tidync::tidync(url)))
 
   # Clip spatial extent, if necessary
   if (inherits(extent, "sf")) {
@@ -113,7 +113,9 @@ get_mom6_nep <- function(
   }
 
   # Start and end dates
-  var_dates <- as.Date(paste0(strsplit(var_info$cefi_date_range, split = "-")[[1]], c("01", "31")), format = "%Y%m%d")
+  var_dates <- strsplit(var_info$cefi_date_range, split = "-")[[1]]
+  dom_end <- lubridate::days_in_month(as.Date(paste0(var_dates[2], "15"), format = "%Y%m%d"))
+  var_dates <- as.Date(paste0(var_dates, c("01", dom_end)), format = "%Y%m%d")
 
   # Expand to date dimension
   if (freq == "monthly") {
@@ -168,11 +170,21 @@ get_mom6_nep <- function(
 
   }
 
-  # Retrieve data and convert to stars
-  nc <- nc |>
-    st_as_stars.tidync() |>
-    sf::st_set_crs(4326) |>
-    stars::st_set_dimensions("time", values = var_dates)
+  # Retrieve data
+  nc <- tidync::hyper_tbl_cube(nc)
+
+  # Cell corners
+  nc$dims$lon <- rotate_lon(nc$dims$lon, from = "0/360")
+  delta <- vapply(nc$dims[1:2], \(x) diff(x)[1], numeric(1))
+  offset <- vapply(nc$dims[1:2], \(x) x[1], numeric(1)) - delta / 2
+
+  # Convert to stars
+  nc <- stats::setNames(stars::st_as_stars(nc$mets[[1]]), var)
+  nc <- stars::st_set_dimensions(nc, which = 1, offset = offset["lon"], delta = delta["lon"], names = "lon", point = FALSE)
+  nc <- stars::st_set_dimensions(nc, which = 2, offset = offset["lat"], delta = delta["lat"], names = "lat", point = FALSE)
+  nc <- stars::st_set_dimensions(nc, "time", values = var_dates)
+  nc <- stars::st_set_dimensions(nc, xy = c("lon", "lat"))
+  sf::st_crs(nc) <- sf::st_crs(4326)
 
   # Resample on target CRS, if applicable
   if (target_crs != 4326) {
