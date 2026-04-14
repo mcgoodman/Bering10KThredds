@@ -37,7 +37,7 @@ test_that(
   }
 )
 
-test_that{
+test_that(
   "Error checking works", {
 
     expect_error(
@@ -51,7 +51,7 @@ test_that{
     )
   
 }
-}
+)
 
 test_that(
   "Listing ROMS datasets works", {
