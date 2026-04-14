@@ -7,24 +7,24 @@
 get_mom6_nep(
   var = "tob",
   freq = c("monthly", "daily"),
-  category = c("ocean_monthly", "ice_monthly", "ocean_cobalt_omip_sfc",
-    "ocean_cobalt_btm", "ocean_cobalt_sfc", "ocean_cobalt_tracers_int",
-    "ocean_cobalt_omip_2d", "ocean_monthly_z", "ocean_cobalt_tracers_month_z",
-    "ocean_cobalt_fluxes_int", "ocean_cobalt_daily_2d", "ocean_daily"),
+  category = paste0("ocean_", freq),
   release = NA,
   extent = get_ebs_shapefile("EBS"),
   start_date = NA,
   end_date = NA,
-  target_crs = 32602
+  target_crs = 32602,
+  chunk = "none"
 )
 }
 \arguments{
-\item{var}{variable name. See https://psl.noaa.gov/cefi_portal/ for options.}
+\item{var}{variable name. See [CEFI portal](https://psl.noaa.gov/cefi_portal/) or use
+`list_mom6_nep()` for options.}
 
 \item{freq}{"monthly" or "daily". Note that a matching category must also be
 specified, e.g. "ocean_daily" for daily frequency.}
 
-\item{category}{data category}
+\item{category}{data category. See [CEFI portal](https://psl.noaa.gov/cefi_portal/) or use
+`list_mom6_nep()` for options.}
 
 \item{release}{release code. If NA, returns latest available release.}
 
@@ -42,8 +42,12 @@ If NA, all available dates are returned. Can be NA even if `end_date` is provide
 only years and months of provided date is used, date of month is ignored.
 If NA, all available dates are returned. Can be NA even if `start_date` is provided.}
 
-\item{target_crs}{CRS to transform output to. Defaults to UTM zone 2N (EPSG 32602).
-NA defaults to WGS84 lat/long (EPSG 4326).}
+\item{target_crs}{CRS to transform output to (as `crs` object or integer EPSG code). 
+Defaults to UTM zone 2N (EPSG 32602). NA defaults to WGS84 lat/long (EPSG 4326).}
+
+\item{chunk}{Time interval to chunk requests by (e.g., "10 years"); "none" for no chunking.
+Using no chunks may result in request hitting server data limits; using too many chunks 
+may result in hitting server rate limits. Accepts any string that `seq.Date` can parse.}
 }
 \value{
 A `stars` object

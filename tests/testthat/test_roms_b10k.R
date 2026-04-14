@@ -34,7 +34,11 @@ test_that(
 
     expect_equal(sum(!is.na(roms$oxygen)), 4889294)
 
-    # Error checking works
+  }
+)
+
+test_that{
+  "Error checking works", {
 
     expect_error(
       get_roms_b10k("totally a real variable"),
@@ -45,8 +49,12 @@ test_that(
       get_roms_b10k("temp_bottom5m", start = 2200),
       "Download failed"
     )
+  
+}
+}
 
-    # Listing datasets works
+test_that(
+  "Listing ROMS datasets works", {
 
     expect_equal(
       capture.output(BeringSeaData::check_availability("pH_bottom5m", type = "hindcast"))[-1],
@@ -64,7 +72,6 @@ test_that(
           BeringSeaData::list_roms_datasets()
       )
     )
-
 
   }
 )
