@@ -2,7 +2,10 @@
 % Please edit documentation in R/spatial.R
 \name{get_bathymetry}
 \alias{get_bathymetry}
-\title{NOAA 15-arcsecond EBS digitial bedrock elevation model}
+\title{NOAA ETOPO 15-arcsecond digitial bedrock elevation model for the EBS}
+\source{
+NOAA National Centers for Environmental Information. 2022: ETOPO 2022 15 Arc-Second Global Relief Model. NOAA National Centers for Environmental Information. \href{https://doi.org/10.25921/fd45-gt74}{doi.org/10.25921/fd45-gt74}
+}
 \usage{
 get_bathymetry()
 }
@@ -10,5 +13,5 @@ get_bathymetry()
 A "stars" object
 }
 \description{
-NOAA 15-arcsecond EBS digitial bedrock elevation model
+NOAA ETOPO 15-arcsecond digitial bedrock elevation model for the EBS
 }

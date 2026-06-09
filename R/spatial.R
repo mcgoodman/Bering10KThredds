@@ -4,7 +4,7 @@
 #' @title EBS survey shapefiles
 #' @param region Either "EBS" for full survey region including NBS, or "SEBS"
 #' @param type Whether to return multipolygon corresponding to survey grid ("grid") or region boundary only ("boundary")
-#' @source \href{https://github.com/afsc-gap-products/akgfmaps}{QTL Archive}
+#' @source \href{https://github.com/afsc-gap-products/akgfmaps}{github.com/afsc-gap-products/akgfmaps}
 #'
 #' @return An "sf" object
 #' @export
@@ -25,7 +25,7 @@ get_ebs_shapefile <- function(region = c("EBS", "SEBS"), type = c("boundary", "g
 }
 
 
-#' @title Alaska coastline shapefile
+#' @title Coastline shapefile for Alaska region (including parts of Russia and Canada)
 #'
 #' @param res resolution ("medium" or "high")
 #' @return An "sf" object
@@ -42,8 +42,9 @@ get_ak_coast <- function(res = c("medium", "high")) {
 }
 
 
-#' @title NOAA 15-arcsecond EBS digitial bedrock elevation model
+#' @title NOAA ETOPO 15-arcsecond digitial bedrock elevation model for the EBS
 #' @return A "stars" object
+#' @source NOAA National Centers for Environmental Information. 2022: ETOPO 2022 15 Arc-Second Global Relief Model. NOAA National Centers for Environmental Information. \href{https://doi.org/10.25921/fd45-gt74}{doi.org/10.25921/fd45-gt74}
 #' @export
 get_bathymetry <- function() {
 
@@ -53,8 +54,11 @@ get_bathymetry <- function() {
 
 }
 
-#' @title NOAA 15-arcsecond EBS digitial bedrock elevation model
+#' @title Log sediment grain size (Krumbein phi scale) for the EBS region
+#' @description Estimates from the EBSSED database interpolated / extrapolated using
+#' ordinary kriging with an exponential fit to the empirical semi-variogram.
 #' @return A "stars" object
+#' @source Richwine, K. A. et al. 2018. Surficial sediments of the eastern Bering Sea continental shelf: EBSSED-2 database documentation. – US Dept Comm, NOAA Tech Mem. NMFS-AFSC-377
 #' @export
 get_sediment <- function() {
 

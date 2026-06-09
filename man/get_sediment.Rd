@@ -2,7 +2,10 @@
 % Please edit documentation in R/spatial.R
 \name{get_sediment}
 \alias{get_sediment}
-\title{NOAA 15-arcsecond EBS digitial bedrock elevation model}
+\title{Log sediment grain size (Krumbein phi scale) for the EBS region}
+\source{
+Richwine, K. A. et al. 2018. Surficial sediments of the eastern Bering Sea continental shelf: EBSSED-2 database documentation. – US Dept Comm, NOAA Tech Mem. NMFS-AFSC-377
+}
 \usage{
 get_sediment()
 }
@@ -10,5 +13,6 @@ get_sediment()
 A "stars" object
 }
 \description{
-NOAA 15-arcsecond EBS digitial bedrock elevation model
+Estimates from the EBSSED database interpolated / extrapolated using
+ordinary kriging with an exponential fit to the empirical semi-variogram.
 }

@@ -4,7 +4,7 @@
 \alias{get_ebs_shapefile}
 \title{EBS survey shapefiles}
 \source{
-\href{https://github.com/afsc-gap-products/akgfmaps}{QTL Archive}
+\href{https://github.com/afsc-gap-products/akgfmaps}{github.com/afsc-gap-products/akgfmaps}
 }
 \usage{
 get_ebs_shapefile(region = c("EBS", "SEBS"), type = c("boundary", "grid"))
