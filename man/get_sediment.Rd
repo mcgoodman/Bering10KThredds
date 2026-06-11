@@ -4,15 +4,30 @@
 \alias{get_sediment}
 \title{Log sediment grain size (Krumbein phi scale) for the EBS region}
 \source{
+Jenkins, C. J., McConnaughey, R. A., and Intelmann, S. S. 2025. Documentation for multi-parameter characterization of seafloor substrates in the U.S. EEZ off Alaska. U.S. Department of Commerce, NOAA Technical Memorandum NMFS-AFSC-495, 64 p.
+
 Richwine, K. A. et al. 2018. Surficial sediments of the eastern Bering Sea continental shelf: EBSSED-2 database documentation. – US Dept Comm, NOAA Tech Mem. NMFS-AFSC-377
+
+Smith, K. R and McConnaughey, R. A.; 1999: EBSSED database-Surficial sediments of the eastern Bering Sea continental shelf. NOAA National Centers for Environmental Information.
 }
 \usage{
-get_sediment()
+get_sediment(source = c("dbSEABED", "EBSSED"), type = c("surface", "points"))
+}
+\arguments{
+\item{source}{"dbSEABED" or "EBSSED" (see details)}
+
+\item{type}{"surface" for pre-interpolated surface, or "points" for underlying data}
 }
 \value{
-A "stars" object
+A "stars" object (if type = "surface") or "sf" object (if type = "points")
 }
 \description{
-Estimates from the EBSSED database interpolated / extrapolated using
-ordinary kriging with an exponential fit to the empirical semi-variogram.
+Maps of mean sediment grain size (on the Krumbein phi scale) from either the dbSEABED database
+(Jenkins et al. 2025) or the EBSSED database (Richwine et al. 2018).
+}
+\details{
+dbSEABED estimates are newer and based on data that include the NBS domain; NBS estimates from the EBSSED data are extrapolation. These are pre-processed files using inverse distance weighting for 
+dbSEABED or ordinary Kriging for EBSSED; all original point data (filtered to non-missing phi values) from dbSEABED and EBSSED are available as point data if a different interpolation method is preferred. 
+
+For further detail on dbSEABED fields, see documentation of the _grz_OtherParams_idw3d.gdb and the _xyPOINTS_FNLf_VectorData.gdb datasets from Jenkins et al. (2025).
 }
