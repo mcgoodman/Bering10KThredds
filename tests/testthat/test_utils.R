@@ -28,7 +28,7 @@ test_that(
       "`x` must be a 3-dimensional `stars` object"
     )
 
-    phi4 <- st_reband(c(phi2, setNames(phi2, "depth")))
+    phi4 <- st_reband(c(phi2, stats::setNames(phi2, "depth")))
 
     expect_equal(
       c("phi.1", "phi.2", "depth.1", "depth.2"),
