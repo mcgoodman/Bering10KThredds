@@ -27,19 +27,19 @@ with_retries <- function(expr, max_attempts = 5, base_sleep = 2) {
       expr,
       error = function(e) e
     )
-
+    
     if (!inherits(result, "error")) {
       return(result)
     }
-
+    
     if (attempt == max_attempts) {
       stop(sprintf("Failed after %d attempts. Final error: %s", max_attempts, result$message), call. = FALSE)
     }
-
+    
     sleep_time <- base_sleep * (2 ^ (attempt - 1)) + stats::runif(1, min = 0, max = 1)
     message(sprintf("Request failed (Attempt %d/%d). Retrying in %.1f seconds...", attempt, max_attempts, sleep_time))
     Sys.sleep(sleep_time)
-
+    
     attempt <- attempt + 1
   }
 }
@@ -57,17 +57,17 @@ with_retries <- function(expr, max_attempts = 5, base_sleep = 2) {
 #' @export
 #' 
 list_mom6 <- function(
-    region = c("NEP", "NWA"),
-    experiment = c("hindcast", "forecast", "reforecast", "decadal_forecast"),
-    var = NULL,
-    freq = NULL,
-    category = NULL,
-    release = NULL
+  region = c("NEP", "NWA"),
+  experiment = c("hindcast", "forecast", "reforecast", "decadal_forecast"),
+  var = NULL,
+  freq = NULL,
+  category = NULL,
+  release = NULL
 ) {
   
   region <- match.arg(region)
   experiment <- match.arg(experiment)
-
+  
   # Query available datasets
   available <- jsonlite::fromJSON(cefi_variable_lists$link[cefi_variable_lists$region == region & cefi_variable_lists$experiment == experiment])
   available <- do.call("rbind", lapply(available, as.data.frame))
@@ -96,18 +96,15 @@ list_mom6 <- function(
 #' @param release release code. If NA, returns latest available release.
 #' @param extent Either (1) a shapefile from which to compute the extent,
 #'  (2) a bounding box created using `sf::st_bbox()` with accompanying CRS,
-#'  or (3) NA or NULL for the full MOM6 grid. If a shapefile is provided, it will be
-#'  used to mask (crop) the output prior to returning. For the NEP region, defaults
-#'  to the NOAA AFSC Eastern Bering Sea (including NBS) survey region. For NWA, defaults to NA.
+#'  or (3) NA for the full MOM6 grid. If a shapefile is provided, it will be
+#'  used to mask (crop) the output prior to returning. NULL defaults to
+#'  to the NOAA AFSC EBS (including NBS) survey region for NEP, and full domain for NWA.
 #' @param start_date Initial date to query data for. If frequency = "monthly",
 #'   only years and months of provided date is used, date of month is ignored.
 #'   If NA, all available dates are returned. Can be NA even if `end_date` is provided.
 #' @param end_date Final date to query data for. If frequency = "monthly",
 #'   only years and months of provided date is used, date of month is ignored.
 #'   If NA, all available dates are returned. Can be NA even if `start_date` is provided.
-#' @param target_crs CRS to transform output to (as `crs` object or integer EPSG code). 
-#'   Defaults to UTM zone 2N (EPSG 32602) for NEP regridded data. NA or NULL defaults to 
-#'   WGS84 lat/long (EPSG 4326).
 #' @param chunk Time interval to chunk requests by (e.g., "10 years"); "none" for no chunking.
 #'   Using no chunks may result in request hitting server data limits; using too many chunks 
 #'   may result in hitting server rate limits. Accepts any string that `seq.Date` can parse.
@@ -116,40 +113,34 @@ list_mom6 <- function(
 #' @export
 #'
 get_mom6 <- function(
-    var = "tob",
-    freq = c("monthly", "daily"),
-    grid_type = c("regrid", "raw"),
-    region = c("NEP", "NWA"),
-    experiment = c("hindcast", "forecast", "reforecast", "decadal_forecast"),
-    category = paste0("ocean_", freq),
-    release = NA,
-    extent = NULL,
-    start_date = NA,
-    end_date = NA,
-    target_crs = NULL,
-    chunk = "none"
+  var = "tob",
+  freq = c("monthly", "daily"),
+  grid_type = c("regrid", "raw"),
+  region = c("NEP", "NWA"),
+  experiment = c("hindcast", "forecast", "reforecast", "decadal_forecast"),
+  category = paste0("ocean_", freq),
+  release = NA,
+  extent = NULL,
+  start_date = NA,
+  end_date = NA,
+  chunk = "none"
 ) {
+  
   grid_type <- match.arg(grid_type)
   region <- match.arg(region)
   experiment <- match.arg(experiment)
   freq <- match.arg(freq)
-
+  
+  # Default to EBS survey region if requesting NEP data
+  if (is.null(extent)) {
+    if (region == "NEP") {
+      extent <- get_ebs_shapefile("EBS")
+    } else {
+      extent <- NA
+    }
+  }
+  
   if (grid_type == "regrid") {
-    # Resolve extent and target_crs defaults for regrid
-    if (is.null(extent)) {
-      if (region == "NEP") {
-        extent <- get_ebs_shapefile("EBS")
-      } else {
-        extent <- NA
-      }
-    }
-    if (is.null(target_crs)) {
-      if (region == "NEP") {
-        target_crs <- 32602
-      } else {
-        target_crs <- NA
-      }
-    }
     
     get_mom6_regrid(
       var = var,
@@ -161,18 +152,11 @@ get_mom6 <- function(
       extent = extent,
       start_date = start_date,
       end_date = end_date,
-      target_crs = target_crs,
       chunk = chunk
     )
-  } else {
-    # Resolve extent and target_crs defaults for raw
-    if (is.null(extent)) {
-      extent <- NA
-    }
-    if (is.null(target_crs)) {
-      target_crs <- NA
-    }
 
+  } else {
+    
     get_mom6_raw(
       var = var,
       freq = freq,
@@ -183,26 +167,26 @@ get_mom6 <- function(
       extent = extent,
       start_date = start_date,
       end_date = end_date,
-      target_crs = target_crs,
       chunk = chunk
     )
+
   }
+
 }
 
 #' Internal function to query regridded MOM6 data
 #' @noRd
 get_mom6_regrid <- function(
-    var = "tob",
-    freq = "monthly",
-    region = "NEP",
-    experiment = "hindcast",
-    category = paste0("ocean_", freq),
-    release = NA,
-    extent = NA,
-    start_date = NA,
-    end_date = NA,
-    target_crs = NA, 
-    chunk = "none"
+  var = "tob",
+  freq = "monthly",
+  region = "NEP",
+  experiment = "hindcast",
+  category = paste0("ocean_", freq),
+  release = NA,
+  extent = NA,
+  start_date = NA,
+  end_date = NA,
+  chunk = "none"
 ) {
   
   # Query available datasets
@@ -212,14 +196,6 @@ get_mom6_regrid <- function(
   # Argument checking
   if (!(nrow(available) > 0)) stop(paste0("specified data category not available for freq = ", freq))
   if (!(var %in% available$cefi_variable)) stop(paste0("specified variable not available freq = ", freq, " and category = ", category))
-  
-  if (inherits(target_crs, "crs")) {
-    target_crs <- target_crs$epsg
-  } else if (is.na(target_crs)) {
-    target_crs <- 4326
-  } else if (!inherits(target_crs, c("integer", "numeric"))) {
-    stop("`target_crs` must be of class 'crs' or an integer EPSG code")
-  }
   
   # Subset to requested variable
   available <- available[available$cefi_variable == var,]
@@ -283,7 +259,7 @@ get_mom6_regrid <- function(
   } else {
     var_dates <- seq(var_dates[1], var_dates[2], by = "day")
   }
-
+  
   all_dates <- var_dates
   
   # Clip temporal extent, if necessary
@@ -326,7 +302,7 @@ get_mom6_regrid <- function(
     
     start_dates <- seq(start_date, end_date, by = chunk)
     end_dates <- c(start_dates[-1] - 1, end_date)
-
+    
     stars_list <- vector("list", length(start_dates))
     
     for (i in seq_along(start_dates)) {
@@ -335,7 +311,7 @@ get_mom6_regrid <- function(
       indices <- match(chunk_dates, all_dates)
       
       nc_chunk <- nc |> tidync::hyper_filter(time = index >= min(indices) & index <= max(indices))
-
+      
       cube_chunk <- with_retries(tidync::hyper_tbl_cube(nc_chunk), max_attempts = 5)
       cube_chunk$dims$lon <- rotate_lon(cube_chunk$dims$lon, from = "0/360")
       
@@ -344,7 +320,7 @@ get_mom6_regrid <- function(
         delta <- vapply(cube_chunk$dims[1:2], \(x) diff(x)[1], numeric(1))
         offset <- vapply(cube_chunk$dims[1:2], \(x) x[1], numeric(1)) - delta / 2
       }
-
+      
       stars_list[[i]] <- stars::st_as_stars(cube_chunk$mets[[1]])
       
     }
@@ -355,14 +331,14 @@ get_mom6_regrid <- function(
   } else {
     
     indices <- match(var_dates, all_dates)
-
+    
     nc <- nc |> tidync::hyper_filter(time = index >= min(indices) & index <= max(indices))
     nc <- with_retries(tidync::hyper_tbl_cube(nc), max_attempts = 5)
     nc$dims$lon <- rotate_lon(nc$dims$lon, from = "0/360")
-
+    
     delta <- vapply(nc$dims[1:2], \(x) diff(x)[1], numeric(1))
     offset <- vapply(nc$dims[1:2], \(x) x[1], numeric(1)) - delta / 2
-
+    
     nc <- stars::st_as_stars(nc$mets[[1]])
     
   }
@@ -375,15 +351,10 @@ get_mom6_regrid <- function(
   nc <- stars::st_set_dimensions(nc, xy = c("lon", "lat"))
   sf::st_crs(nc) <- sf::st_crs(4326)
   
-  # Resample on target CRS, if applicable
-  if (sf::st_crs(target_crs) != sf::st_crs(4326)) {
-    nc <- stars::st_warp(nc, crs = target_crs)
-  }
-  
   # Crop to shapefile extent, if applicable
   if (inherits(extent, "sf")) {
-    if (sf::st_crs(extent) != sf::st_crs(target_crs)) {
-      extent <- sf::st_transform(extent, crs = target_crs)
+    if (sf::st_crs(extent) != sf::st_crs(nc)) {
+      extent <- sf::st_transform(extent, crs = sf::st_crs(4326))
     }
     nc <- nc[extent]
   }
@@ -395,17 +366,16 @@ get_mom6_regrid <- function(
 #' Internal function to query raw MOM6 data
 #' @noRd
 get_mom6_raw <- function(
-    var = "tob",
-    freq = "monthly",
-    region = "NEP",
-    experiment = "hindcast",
-    category = paste0("ocean_", freq),
-    release = NA,
-    extent = NA,
-    start_date = NA,
-    end_date = NA,
-    target_crs = NA,
-    chunk = "none"
+  var = "tob",
+  freq = "monthly",
+  region = "NEP",
+  experiment = "hindcast",
+  category = paste0("ocean_", freq),
+  release = NA,
+  extent = NA,
+  start_date = NA,
+  end_date = NA,
+  chunk = "none"
 ) {
   
   # Query available datasets
@@ -441,20 +411,20 @@ get_mom6_raw <- function(
   thredds_base <- 'http://psl.noaa.gov/thredds/dodsC/Projects/CEFI/regional_mom6/cefi_portal'
   url_static <- paste(thredds_base, region_long, "full_domain", experiment_long, freq, "raw", release, "ocean_static.nc", sep = "/")
   nc_static <- with_retries(suppressWarnings(suppressMessages(tidync::tidync(url_static))), max_attempts = 5)
-
+  
   # Activate dimensions in nc_static matching dimensions for requested variable
   dims <- nc$dimension$name[nc$dimension$active]
   dims <- dims[dims != "time"]
   dims_use <- nc_static$dimension$id[nc_static$dimension$name %in% dims]
   dims_use <- paste0("D", sort(dims_use), collapse = ",")
   nc_static <- nc_static |> tidync::activate(dims_use)
-
+  
   # Extract coordinates corresponding to grid location (h/v/u/c) depending on variable
   grid_vars <- nc_static$grid$variables[nc_static$grid$grid == dims_use][[1]][[1]]
   coord_vars <- c(lon = grid_vars[grepl("geolon", grid_vars)], lat = grid_vars[grepl("geolat", grid_vars)])
   coords <- stats::setNames(tidync::hyper_array(nc_static, select_var = coord_vars), names(coord_vars))
   coords <- simplify2array(coords)
-
+  
   # geolon / geolat are sometimes NA over land - these need to be appended to enable reprojection with `stars`
   if (any(is.na(coords))) {
     X <- cbind(1, stats::poly(I(seq_len(dim(coords)[2])), 3))
@@ -463,10 +433,10 @@ get_mom6_raw <- function(
       coords[i, is.na(coords[i,,"lat"]), "lat"] <- (X %*% stats::coef(stats::lm(I(coords[i,,"lat"]) ~ 0 + I(X))))[is.na(coords[i,,"lat"])]
     }
   }
-
+  
   # Clip spatial extent, if necessary
   if (!all(is.na(extent))) {
-
+    
     # Construct bounding box
     if (inherits(extent, c("sf", "sfc"))) {
       extent_wgs84 <- sf::st_transform(extent, crs = 4326)
@@ -474,7 +444,7 @@ get_mom6_raw <- function(
     } else if (inherits(extent, "bbox")) {
       bbox <- sf::st_transform(extent, crs = 4326)
     }
-
+    
     if (region == "NEP") {
       bbox[c("xmin", "xmax")] <- rotate_lon(bbox[c("xmin", "xmax")])
     }
@@ -484,18 +454,18 @@ get_mom6_raw <- function(
       coords[,,"lon"] >= bbox["xmin"] & coords[,,"lon"] <= bbox["xmax"] & 
       coords[,,"lat"] >= bbox["ymin"] & coords[,,"lat"] <= bbox["ymax"]
     )
-
+    
     if (!sum(mask)) stop("no data within requested extent")
     
     x_idx <- range(which(apply(mask, 1, any)))
     y_idx <- range(which(apply(mask, 2, any)))
-
+    
     # Restrict query to this range
     nc <- nc |> tidync::hyper_filter(
       !!dims[1] := index >= x_idx[1] & index <= x_idx[2],
       !!dims[2] := index >= y_idx[1] & index <= y_idx[2]
     )
-
+    
     # Subset coords for use downstream
     coords <- coords[x_idx[1]:x_idx[2], y_idx[1]:y_idx[2], ]
     
@@ -517,7 +487,7 @@ get_mom6_raw <- function(
   } else {
     var_dates <- seq(var_dates[1], var_dates[2], by = "day")
   }
-
+  
   all_dates <- var_dates
   
   # Clip temporal extent, if necessary
@@ -560,7 +530,7 @@ get_mom6_raw <- function(
     
     start_dates <- seq(start_date, end_date, by = chunk)
     end_dates <- c(start_dates[-1] - 1, end_date)
-
+    
     stars_list <- vector("list", length(start_dates))
     
     for (i in seq_along(start_dates)) {
@@ -569,7 +539,7 @@ get_mom6_raw <- function(
       indices <- match(chunk_dates, all_dates)
       
       nc_chunk <- nc |> tidync::hyper_filter(time = index >= min(indices) & index <= max(indices))
-
+      
       cube_chunk <- with_retries(tidync::hyper_tbl_cube(nc_chunk), max_attempts = 5)
       cube_chunk$dims$lon <- rotate_lon(cube_chunk$dims$lon, from = "0/360")
       
@@ -578,7 +548,7 @@ get_mom6_raw <- function(
         delta <- vapply(cube_chunk$dims[1:2], \(x) diff(x)[1], numeric(1))
         offset <- vapply(cube_chunk$dims[1:2], \(x) x[1], numeric(1)) - delta / 2
       }
-
+      
       stars_list[[i]] <- stars::st_as_stars(cube_chunk$mets[[1]])
       
     }
@@ -589,18 +559,18 @@ get_mom6_raw <- function(
   } else {
     
     indices <- match(var_dates, all_dates)
-
+    
     nc <- nc |> tidync::hyper_filter(time = index >= min(indices) & index <= max(indices))
     nc <- with_retries(tidync::hyper_tbl_cube(nc), max_attempts = 5)
     nc$dims$lon <- rotate_lon(nc$dims$lon, from = "0/360")
-
+    
     delta <- vapply(nc$dims[1:2], \(x) diff(x)[1], numeric(1))
     offset <- vapply(nc$dims[1:2], \(x) x[1], numeric(1)) - delta / 2
-
+    
     nc <- stars::st_as_stars(nc$mets[[1]])
     
   }
-
+  
   # Convert to stars
   nc <- stats::setNames(nc, var)
   nc <- stars::st_as_stars(nc, curvilinear = setNames(asplit(coords, 3), dims))
@@ -612,13 +582,6 @@ get_mom6_raw <- function(
       extent <- sf::st_transform(extent, crs = sf::st_crs(nc))
     }
     nc <- nc[extent]
-  }
-
-  # Resample on target CRS, if applicable
-  if (!is.null(target_crs) && !is.na(target_crs)) {
-    if (sf::st_crs(target_crs) != sf::st_crs(4326)) {
-      nc <- stars::st_warp(nc, crs = target_crs)
-    }
   }
   
   return(nc)

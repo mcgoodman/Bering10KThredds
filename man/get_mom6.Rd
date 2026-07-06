@@ -15,7 +15,6 @@ get_mom6(
   extent = NULL,
   start_date = NA,
   end_date = NA,
-  target_crs = NULL,
   chunk = "none"
 )
 }
@@ -39,9 +38,9 @@ specified, e.g. "ocean_daily" for daily frequency.}
 
 \item{extent}{Either (1) a shapefile from which to compute the extent,
 (2) a bounding box created using `sf::st_bbox()` with accompanying CRS,
-or (3) NA or NULL for the full MOM6 grid. If a shapefile is provided, it will be
-used to mask (crop) the output prior to returning. For the NEP region, defaults
-to the NOAA AFSC Eastern Bering Sea (including NBS) survey region. For NWA, defaults to NA.}
+or (3) NA for the full MOM6 grid. If a shapefile is provided, it will be
+used to mask (crop) the output prior to returning. NULL defaults to
+to the NOAA AFSC EBS (including NBS) survey region for NEP, and full domain for NWA.}
 
 \item{start_date}{Initial date to query data for. If frequency = "monthly",
 only years and months of provided date is used, date of month is ignored.
@@ -50,10 +49,6 @@ If NA, all available dates are returned. Can be NA even if `end_date` is provide
 \item{end_date}{Final date to query data for. If frequency = "monthly",
 only years and months of provided date is used, date of month is ignored.
 If NA, all available dates are returned. Can be NA even if `start_date` is provided.}
-
-\item{target_crs}{CRS to transform output to (as `crs` object or integer EPSG code). 
-Defaults to UTM zone 2N (EPSG 32602) for NEP regridded data. NA or NULL defaults to 
-WGS84 lat/long (EPSG 4326).}
 
 \item{chunk}{Time interval to chunk requests by (e.g., "10 years"); "none" for no chunking.
 Using no chunks may result in request hitting server data limits; using too many chunks 
