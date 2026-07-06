@@ -216,25 +216,16 @@ get_mom6_regrid <- function(
   url <- var_info$cefi_opendap
   nc <- with_retries(suppressWarnings(suppressMessages(tidync::tidync(url))), max_attempts = 5)
   
-  if (inherits(extent, "sf")) {
+  if (inherits(extent, "bbox")) extent <- sf::st_as_sfc(extent) 
+
+  if (inherits(extent, c("sf", "sfc"))) {
     
     extent_wgs84 <- sf::st_transform(extent, crs = 4326)
+
+    # Wrap dateline
+    if (region == "NEP") extent_wgs84 <- sf::st_shift_longitude(extent_wgs84)
+
     bbox <- sf::st_bbox(extent_wgs84)
-    if (region == "NEP") {
-      bbox[c("xmin", "xmax")] <- rotate_lon(bbox[c("xmin", "xmax")])
-    }
-    
-    nc <- nc |> tidync::hyper_filter(
-      lon = lon >= bbox["xmin"] & lon <= bbox["xmax"],
-      lat = lat >= bbox["ymin"] & lat <= bbox["ymax"]
-    )
-    
-  } else if (inherits(extent, "bbox")) {
-    
-    bbox <- sf::st_transform(extent, crs = 4326)
-    if (region == "NEP") {
-      bbox[c("xmin", "xmax")] <- rotate_lon(bbox[c("xmin", "xmax")])
-    }
     
     nc <- nc |> tidync::hyper_filter(
       lon = lon >= bbox["xmin"] & lon <= bbox["xmax"],
@@ -437,18 +428,23 @@ get_mom6_raw <- function(
   # Clip spatial extent, if necessary
   if (!all(is.na(extent))) {
     
+    if (inherits(extent, "bbox")) extent <- sf::st_as_sfc(extent) 
+
     # Construct bounding box
-    if (inherits(extent, c("sf", "sfc"))) {
+    if (inherits(extent, c("sf", "sfc"))) { 
+
       extent_wgs84 <- sf::st_transform(extent, crs = 4326)
+
+      if (region == "NEP") extent_wgs84 <- sf::st_shift_longitude(extent_wgs84)
+
       bbox <- sf::st_bbox(extent_wgs84)
-    } else if (inherits(extent, "bbox")) {
-      bbox <- sf::st_transform(extent, crs = 4326)
+
+    } else {
+      
+      stop("extent must either be an sf object, bbox, or NA")
+
     }
-    
-    if (region == "NEP") {
-      bbox[c("xmin", "xmax")] <- rotate_lon(bbox[c("xmin", "xmax")])
-    }
-    
+     
     # Use matrices of lat/long to figure out which MOM6 coordinate range to use
     mask <- (
       coords[,,"lon"] >= bbox["xmin"] & coords[,,"lon"] <= bbox["xmax"] & 

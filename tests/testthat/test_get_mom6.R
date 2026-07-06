@@ -23,7 +23,7 @@ test_that(
       extent = sf::st_bbox(get_ebs_shapefile("EBS"))
     )
 
-    expect_equal(dim(mom6), c(lon = 89, lat = 134, time = 2))
+    expect_equal(dim(mom6), c(lon = 89, lat = 130, time = 2))
 
   }
 )
@@ -58,7 +58,7 @@ test_that("NEP Raw querying works", {
   )
   
   expect_true("time" %in% names(dim(mom6_raw)))
-  expect_equal(dim(mom6_raw), c(ih = 185, jh = 187, time = 2))
+  expect_equal(dim(mom6_raw), c(ih = 182, jh = 186, time = 2))
 
 })
 
