@@ -47,13 +47,13 @@ print(temp_mom6, n = prod(dim(temp_mom6)))
 
     stars object with 3 dimensions and 1 attribute
     attribute(s):
-              Min.   1st Qu.   Median     Mean  3rd Qu.    Max.    NAs
-    tob  -1.960721 0.1090782 2.019937 2.220932 3.832766 15.6925 321300
+              Min.    1st Qu.   Median     Mean 3rd Qu.     Max.    NAs
+    tob  -1.960721 -0.0716224 1.905681 2.137839 3.77049 15.73896 293940
     dimension(s):
-         from  to  offset  delta               refsys                    values x/y
-    x       6 104  -17526  12418 WGS 84 / UTM zone 2N                      NULL [x]
-    y       5 103 7323894 -12418 WGS 84 / UTM zone 2N                      NULL [y]
-    time    1  60      NA     NA                 Date 2020-01-01,...,2024-12-01    
+         from  to offset   delta refsys                    values x/y
+    lon     1  73   -179  0.2884 WGS 84                      NULL [x]
+    lat     1 128  54.48 0.08588 WGS 84                      NULL [y]
+    time    1  60     NA      NA   Date 2020-01-01,...,2024-12-01    
 
 These ouputs can be plotted using `ggplot2::geom_stars` (example using ROMS below) or using the `stars` plotting utility:
 
@@ -77,12 +77,12 @@ temp_mom6 |>
 ```
 
             time        mean
-    1 2020-01-01  0.96913739
-    2 2020-02-01  0.12537628
-    3 2020-03-01 -0.11976230
-    4 2020-04-01  0.01070486
-    5 2020-05-01  0.71363816
-    6 2020-06-01  1.96432718
+    1 2020-01-01  0.83560274
+    2 2020-02-01  0.02597870
+    3 2020-03-01 -0.20904801
+    4 2020-04-01 -0.08455181
+    5 2020-05-01  0.60549278
+    6 2020-06-01  1.87319963
 
 Note:
 
@@ -268,16 +268,6 @@ check_availability(var, type = "projection", scenario = "SSP585", earth_model = 
     2090-2094
     2095-2099
 
-## References
-
-For description of ROMS models, see:
-
-Hermann AJ, Gibson GA, Bond NA, Curchitser EN, Hedstrom K, Cheng W, Wang M, Cokelet ED, Stabeno PJ, Aydin K (2016). “Projected future biophysical states of the Bering Sea.” Deep-Sea Research Part II: Topical Studies in Oceanography, 134, 30–47. ISSN 09670645, doi:10.1016/j.dsr2.2015.11.001, Publisher: Elsevier, http://dx.doi.org/10.1016/j.dsr2.2015.11.001.
-
-Kearney KA, Hermann A, Cheng W, Ortiz I, Aydin K (2020). “A coupled pelagic–benthic–sympagic biogeochemical model for the Bering Sea: documentation and validation of the BESTNPZ model (v2019.08.23) within a high-resolution regional ocean model.” Geoscientific Model Development, 13(2), 597–650. ISSN 1991-9603, doi:10.5194/gmd-13-597-2020, https://gmd.copernicus.org/articles/13/597/2020/.
-
-Pilcher DJ, Naiman DM, Cross JN, Hermann AJ, Siedlecki SA, Gibson GA, Mathis JT (2019). “Modeled Effect of Coastal Biogeochemical Processes, Climate Variability, and Ocean Acidification on Aragonite Saturation State in the Bering Sea.” Frontiers in Marine Science, 5, 508. ISSN 2296-7745, doi:10.3389/fmars.2018.00508, https://www.frontiersin.org/article/10.3389/fmars.2018.00508/full.
-
 ## AFSC GAP survey data
 
 The functions `get_catch`, `get_hauldata`, and `get_species_codes` are wrappers for the GAP API documented [here](https://afsc-gap-products.github.io/gap_products/content/foss-api-r.html). To download, for example, all positive tows for walleye pollock from the EBS (SEBS + NBS) survey, and add in the data for hauls with zero catch, use:
@@ -287,6 +277,16 @@ library("BeringSeaData")
 plk_code <- get_species_codes("Gadus chalcogrammus")
 plk_data <- get_catch(plk_code, zero_expand = TRUE, survey = "EBS")
 ```
+
+## References
+
+For description of ROMS models, see:
+
+Hermann AJ, Gibson GA, Bond NA, Curchitser EN, Hedstrom K, Cheng W, Wang M, Cokelet ED, Stabeno PJ, Aydin K (2016). “Projected future biophysical states of the Bering Sea.” Deep-Sea Research Part II: Topical Studies in Oceanography, 134, 30–47. ISSN 09670645, doi:10.1016/j.dsr2.2015.11.001, Publisher: Elsevier, http://dx.doi.org/10.1016/j.dsr2.2015.11.001.
+
+Kearney KA, Hermann A, Cheng W, Ortiz I, Aydin K (2020). “A coupled pelagic–benthic–sympagic biogeochemical model for the Bering Sea: documentation and validation of the BESTNPZ model (v2019.08.23) within a high-resolution regional ocean model.” Geoscientific Model Development, 13(2), 597–650. ISSN 1991-9603, doi:10.5194/gmd-13-597-2020, https://gmd.copernicus.org/articles/13/597/2020/.
+
+Pilcher DJ, Naiman DM, Cross JN, Hermann AJ, Siedlecki SA, Gibson GA, Mathis JT (2019). “Modeled Effect of Coastal Biogeochemical Processes, Climate Variability, and Ocean Acidification on Aragonite Saturation State in the Bering Sea.” Frontiers in Marine Science, 5, 508. ISSN 2296-7745, doi:10.3389/fmars.2018.00508, https://www.frontiersin.org/article/10.3389/fmars.2018.00508/full.
 
 ## Disclaimer
 

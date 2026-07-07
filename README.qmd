@@ -185,16 +185,6 @@ For a given variable and simulation, the range of years available can be checked
 check_availability(var, type = "projection", scenario = "SSP585", earth_model = "GFDL")
 ```
 
-## References
-
-For description of ROMS models, see: 
-
-Hermann AJ, Gibson GA, Bond NA, Curchitser EN, Hedstrom K, Cheng W, Wang M, Cokelet ED, Stabeno PJ, Aydin K (2016). “Projected future biophysical states of the Bering Sea.” Deep-Sea Research Part II: Topical Studies in Oceanography, 134, 30–47. ISSN 09670645, doi:10.1016/j.dsr2.2015.11.001, Publisher: Elsevier, http://dx.doi.org/10.1016/j.dsr2.2015.11.001.
-
-Kearney KA, Hermann A, Cheng W, Ortiz I, Aydin K (2020). “A coupled pelagic–benthic–sympagic biogeochemical model for the Bering Sea: documentation and validation of the BESTNPZ model (v2019.08.23) within a high-resolution regional ocean model.” Geoscientific Model Development, 13(2), 597–650. ISSN 1991-9603, doi:10.5194/gmd-13-597-2020, https://gmd.copernicus.org/articles/13/597/2020/.
-
-Pilcher DJ, Naiman DM, Cross JN, Hermann AJ, Siedlecki SA, Gibson GA, Mathis JT (2019). “Modeled Effect of Coastal Biogeochemical Processes, Climate Variability, and Ocean Acidification on Aragonite Saturation State in the Bering Sea.” Frontiers in Marine Science, 5, 508. ISSN 2296-7745, doi:10.3389/fmars.2018.00508, https://www.frontiersin.org/article/10.3389/fmars.2018.00508/full.
-
 ## AFSC GAP survey data
 
 The functions `get_catch`, `get_hauldata`, and `get_species_codes` are wrappers for the GAP API documented [here](https://afsc-gap-products.github.io/gap_products/content/foss-api-r.html). To download, for example, all positive tows for walleye pollock from the EBS (SEBS + NBS) survey, and add in the data for hauls with zero catch, use: 
@@ -205,6 +195,16 @@ library("BeringSeaData")
 plk_code <- get_species_codes("Gadus chalcogrammus")
 plk_data <- get_catch(plk_code, zero_expand = TRUE, survey = "EBS")
 ```
+
+## References
+
+For description of ROMS models, see: 
+
+Hermann AJ, Gibson GA, Bond NA, Curchitser EN, Hedstrom K, Cheng W, Wang M, Cokelet ED, Stabeno PJ, Aydin K (2016). “Projected future biophysical states of the Bering Sea.” Deep-Sea Research Part II: Topical Studies in Oceanography, 134, 30–47. ISSN 09670645, doi:10.1016/j.dsr2.2015.11.001, Publisher: Elsevier, http://dx.doi.org/10.1016/j.dsr2.2015.11.001.
+
+Kearney KA, Hermann A, Cheng W, Ortiz I, Aydin K (2020). “A coupled pelagic–benthic–sympagic biogeochemical model for the Bering Sea: documentation and validation of the BESTNPZ model (v2019.08.23) within a high-resolution regional ocean model.” Geoscientific Model Development, 13(2), 597–650. ISSN 1991-9603, doi:10.5194/gmd-13-597-2020, https://gmd.copernicus.org/articles/13/597/2020/.
+
+Pilcher DJ, Naiman DM, Cross JN, Hermann AJ, Siedlecki SA, Gibson GA, Mathis JT (2019). “Modeled Effect of Coastal Biogeochemical Processes, Climate Variability, and Ocean Acidification on Aragonite Saturation State in the Bering Sea.” Frontiers in Marine Science, 5, 508. ISSN 2296-7745, doi:10.3389/fmars.2018.00508, https://www.frontiersin.org/article/10.3389/fmars.2018.00508/full.
 
 ## Disclaimer
 
