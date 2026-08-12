@@ -86,13 +86,10 @@ list_mom6 <- function(
 #'
 #' @param var variable name. See [CEFI portal](https://psl.noaa.gov/cefi_portal/) or use
 #'   `list_mom6()` for options.
-#' @param freq "monthly" or "daily". Note that a matching category must also be
-#'   specified, e.g. "ocean_daily" for daily frequency.
+#' @param freq "monthly" or "daily"
 #' @param grid_type "regrid" or "raw". Regridded data is on a regular grid, while raw data is on the model's native curvilinear grid.
 #' @param region CEFI region. "NEP" for Northeast Pacific or "NWA" for Northwest Atlantic.
 #' @param experiment CEFI experiment. Defaults to "hindcast".
-#' @param category data category. See [CEFI portal](https://psl.noaa.gov/cefi_portal/) or use
-#'   `list_mom6()` for options.
 #' @param release release code. If NA, returns latest available release.
 #' @param extent Either (1) a shapefile from which to compute the extent,
 #'  (2) a bounding box created using `sf::st_bbox()` with accompanying CRS,
@@ -105,6 +102,9 @@ list_mom6 <- function(
 #' @param end_date Final date to query data for. If frequency = "monthly",
 #'   only years and months of provided date is used, date of month is ignored.
 #'   If NA, all available dates are returned. Can be NA even if `start_date` is provided.
+#' @param category (optional) data category; should not be required unless the same variable name
+#'   is used in multiple categories. See [CEFI portal](https://psl.noaa.gov/cefi_portal/) or use
+#'   `list_mom6()` for options.
 #' @param chunk Time interval to chunk requests by (e.g., "10 years"); "none" for no chunking.
 #'   Using no chunks may result in request hitting server data limits; using too many chunks 
 #'   may result in hitting server rate limits. Accepts any string that `seq.Date` can parse.
@@ -118,11 +118,11 @@ get_mom6 <- function(
   grid_type = c("regrid", "raw"),
   region = c("NEP", "NWA"),
   experiment = c("hindcast", "forecast", "reforecast", "decadal_forecast"),
-  category = paste0("ocean_", freq),
   release = NA,
   extent = NULL,
   start_date = NA,
   end_date = NA,
+  category = NULL,
   chunk = "none"
 ) {
   
@@ -181,21 +181,22 @@ get_mom6_regrid <- function(
   freq = "monthly",
   region = "NEP",
   experiment = "hindcast",
-  category = paste0("ocean_", freq),
   release = NA,
   extent = NA,
   start_date = NA,
   end_date = NA,
+  category = NULL,
   chunk = "none"
 ) {
   
   # Query available datasets
-  available <- list_mom6(region = region, experiment = experiment, freq = freq, category = category)
+  available <- list_mom6(region = region, experiment = experiment, freq = freq)
   available <- available[available$cefi_grid_type == "regrid",]
+  if (!is.null(category)) available <- available[available$cefi_ori_category == category,]
   
   # Argument checking
-  if (!(nrow(available) > 0)) stop(paste0("specified data category not available for freq = ", freq))
-  if (!(var %in% available$cefi_variable)) stop(paste0("specified variable not available freq = ", freq, " and category = ", category))
+  if (!(nrow(available) > 0)) stop(paste0("no variables for freq = ", freq, " and experiment = ", experiment))
+  if (!(var %in% available$cefi_variable)) stop(paste0("specified variable not available freq = ", freq, " and experiment = ", experiment))
   
   # Subset to requested variable
   available <- available[available$cefi_variable == var,]
@@ -361,21 +362,22 @@ get_mom6_raw <- function(
   freq = "monthly",
   region = "NEP",
   experiment = "hindcast",
-  category = paste0("ocean_", freq),
   release = NA,
   extent = NA,
   start_date = NA,
   end_date = NA,
+  category = NULL,
   chunk = "none"
 ) {
   
   # Query available datasets
-  available <- list_mom6(region = region, experiment = experiment, freq = freq, category = category)
+  available <- list_mom6(region = region, experiment = experiment, freq = freq)
   available <- available[available$cefi_grid_type == "raw",]
+  if (!is.null(category)) available <- available[available$cefi_ori_category == category,]
   
   # Argument checking
-  if (!(nrow(available) > 0)) stop(paste0("specified data category not available for freq = ", freq, " and experiment = ", experiment))
-  if (!(var %in% available$cefi_variable)) stop(paste0("specified variable not available freq = ", freq, " and category = ", category))
+  if (!(nrow(available) > 0)) stop(paste0("no variables for freq = ", freq, " and experiment = ", experiment))
+  if (!(var %in% available$cefi_variable)) stop(paste0("specified variable not available freq = ", freq, " and experiment = ", experiment))
   
   # Subset to requested variable
   available <- available[available$cefi_variable == var,]
@@ -569,7 +571,7 @@ get_mom6_raw <- function(
   
   # Convert to stars
   nc <- stats::setNames(nc, var)
-  nc <- stars::st_as_stars(nc, curvilinear = setNames(asplit(coords, 3), dims))
+  nc <- stars::st_as_stars(nc, curvilinear = stats::setNames(asplit(coords, 3), dims))
   sf::st_crs(nc) <- sf::st_crs(4326)
   
   # Crop to shapefile extent, if applicable
